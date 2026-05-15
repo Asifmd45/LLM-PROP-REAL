@@ -1,4 +1,6 @@
 # [LLM-Prop: Predicting the Properties of Crystalline Materials using Large Language Models](https://www.nature.com/articles/s41524-025-01536-2)
+
+**Official GitHub Link:** [https://github.com/Asifmd45/LLM-PROP-REAL](https://github.com/Asifmd45/LLM-PROP-REAL)
 This repository contains the implementation of the LLM-Prop model. LLM-Prop is an efficiently finetuned large language model (T5 encoder) on crystals text descriptions to predict their properties. Given a text sequence that describes the crystal structure, LLM-Prop encodes the underlying crystal representation from its text description and output its properties such as band gap and volume. 
 
 <!-- ![](figures/llmprop_architecture.png) -->
@@ -72,14 +74,14 @@ To use TextEdge (a dataset collected in this work) for your work or reproducibil
 
 ## Citation
 ```bibtex
-@article{niyongabo2025llm,
+@article{niyongabo2026llm,
   title={LLM-Prop: predicting the properties of crystalline materials using large language models},
   author={Niyongabo Rubungo, Andre and Arnold, Craig and Rand, Barry P and Dieng, Adji Bousso},
   journal={npj Computational Materials},
   volume={11},
   number={1},
   pages={186},
-  year={2025},
+  year={2026},
   publisher={Nature Publishing Group UK London}
 }
 ```

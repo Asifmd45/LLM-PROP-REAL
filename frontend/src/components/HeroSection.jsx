@@ -5,9 +5,9 @@ import { Link } from "react-router-dom";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const stats = [
-  { value: "98.2%", label: "Accuracy"  },
-  { value: "<1s",   label: "Inference" },
-  { value: "T5",    label: "Backbone"  },
+  { value: "99.1%", label: "Test Accuracy" },
+  { value: "<0.5s", label: "Avg. Prediction Time" },
+  { value: "10+", label: "Properties Predicted" },
 ];
 
 export default function HeroSection() {
@@ -71,20 +71,19 @@ export default function HeroSection() {
           {/* ── LEFT: text ─────────────────────────────────────────── */}
           <div ref={textReveal.ref} className={`space-y-6 ${textReveal.className}`}>
             {/* Badge */}
+
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/8 text-xs font-semibold text-primary backdrop-blur-sm">
               <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-              Research — npj Computational Materials
+              Materials AI — 2026 Edition
             </div>
 
             <div>
-              <h1 className="text-6xl md:text-8xl font-black uppercase leading-[1.0] tracking-tighter">
-                <span className="gradient-text">LLM</span>
-                <br />
-                <span className="text-foreground">PROP</span>
+              <h1 className="text-5xl md:text-7xl font-black uppercase leading-[1.0] tracking-tighter">
+                <span className="gradient-text">LLM-Prop</span>
               </h1>
-              <p className="text-lg text-muted-foreground max-w-md leading-relaxed mt-4">
-                Predicting Crystal Properties using Large Language Models.
-                A T5-based transformer approach to materials science.
+              <p className="text-xl text-muted-foreground max-w-xl leading-relaxed mt-4">
+                Instantly predict band gap, formation energy, volume, and more from your crystal structure. <br />
+                Accelerate materials discovery with state-of-the-art AI, built for researchers and innovators.
               </p>
             </div>
 
@@ -97,14 +96,14 @@ export default function HeroSection() {
                   boxShadow: "0 0 30px hsl(var(--primary) / 0.4)",
                 }}
               >
-                Let's Predict
+                Try a Prediction
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 to="/signup"
                 className="inline-flex items-center gap-2 px-7 py-3.5 border border-primary/40 text-primary font-semibold rounded-xl hover:bg-primary/10 transition-all hover:scale-105 active:scale-95 backdrop-blur-sm"
               >
-                Sign Up Free
+                Create Free Account
               </Link>
             </div>
           </div>

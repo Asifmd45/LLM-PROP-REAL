@@ -3,11 +3,11 @@ import { FileText, Cpu, BrainCircuit, BarChart3 } from "lucide-react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const steps = [
-  { num: "01", title: "Crystal Input",    desc: "Paste crystal text description",         Icon: FileText,      color: "#38bdf8", glow: "rgba(56,189,248,0.5)"   },
-  { num: "02", title: "Text Generation",  desc: "Structured description auto-created from crystal data",     Icon: FileText,    color: "#c084fc", glow: "rgba(192,132,252,0.5)"  },
-  { num: "03", title: "Preprocessing",    desc: "[NUM], [ANG] token replacement & stopword removal",         Icon: Cpu,         color: "#34d399", glow: "rgba(52,211,153,0.5)"   },
-  { num: "04", title: "T5 Encoder",       desc: "Transformer-based semantic encoding of crystal text",       Icon: BrainCircuit,color: "#f97316", glow: "rgba(249,115,22,0.5)"   },
-  { num: "05", title: "Prediction",       desc: "Band gap, volume, formation energy — instant output",       Icon: BarChart3,   color: "#fbbf24", glow: "rgba(251,191,36,0.5)"   },
+  { num: "01", title: "Paste Structure",    desc: "Input your crystal structure or formula.",         Icon: FileText,      color: "#38bdf8", glow: "rgba(56,189,248,0.5)"   },
+  { num: "02", title: "Auto Description",  desc: "Fetch or generate a human-readable material description.",     Icon: FileText,    color: "#c084fc", glow: "rgba(192,132,252,0.5)"  },
+  { num: "03", title: "AI Processing",    desc: "Advanced language model interprets your material.",         Icon: Cpu,         color: "#34d399", glow: "rgba(52,211,153,0.5)"   },
+  { num: "04", title: "Property Prediction",       desc: "Get instant predictions for band gap, energy, and more.",       Icon: BarChart3,   color: "#fbbf24", glow: "rgba(251,191,36,0.5)"   },
+  { num: "05", title: "Explore & Export",       desc: "Review, clear, and export your results for research.",       Icon: BrainCircuit, color: "#f97316", glow: "rgba(249,115,22,0.5)"   },
 ];
 
 function Connector({ color, active }) {
@@ -62,14 +62,14 @@ export default function HowItWorksSection() {
         <div ref={headerReveal.ref} className={`text-center mb-20 ${headerReveal.className}`}>
           <p className="text-primary text-xs font-bold tracking-widest uppercase mb-3 flex items-center justify-center gap-2">
             <span className="w-8 h-px bg-primary inline-block" />
-            Pipeline
+            Workflow
             <span className="w-8 h-px bg-primary inline-block" />
           </p>
           <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter">
-            How It <span className="gradient-text">Works</span>
+            How LLM-Prop <span className="gradient-text">Accelerates Research</span>
           </h2>
-          <p className="text-muted-foreground mt-4 max-w-xl mx-auto text-sm leading-relaxed">
-            From raw crystal description to property prediction — powered by a fine-tuned T5 transformer.
+          <p className="text-muted-foreground mt-4 max-w-xl mx-auto text-base leading-relaxed">
+            Go from crystal structure to actionable property predictions in seconds. No coding or ML expertise required.
           </p>
         </div>
 

@@ -1,4 +1,4 @@
-# TRANS-PROP Quickstart
+# LLM-PROP Quickstart
 
 Minimal commands to get the project running locally. Use PowerShell on Windows or Bash on macOS/Linux.
 

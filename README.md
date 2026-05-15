@@ -1,15 +1,15 @@
 <!-- Improved README: project overview, architecture, quickstart, and troubleshooting -->
-# TRANS-PROP (LLM-PROP)
+# LLM-PROP (LLM-PROP)
 
 Modern, local inference stack for crystal/material property prediction.
 The project exposes a React frontend that talks to an Express middleware which forwards requests to a FastAPI ML backend that runs model inference.
 
-[![License](https://img.shields.io/github/license/Asifmd45/TRANS-PROP)](https://github.com/Asifmd45/TRANS-PROP/blob/main/LICENSE) [![Last commit](https://img.shields.io/github/last-commit/Asifmd45/TRANS-PROP)](https://github.com/Asifmd45/TRANS-PROP/commits/main) [![Repo size](https://img.shields.io/github/repo-size/Asifmd45/TRANS-PROP)](https://github.com/Asifmd45/TRANS-PROP) [![Stars](https://img.shields.io/github/stars/Asifmd45/TRANS-PROP?style=social)](https://github.com/Asifmd45/TRANS-PROP/stargazers)
+[![License](https://img.shields.io/github/license/Asifmd45/LLM-PROP)](https://github.com/Asifmd45/LLM-PROP/blob/main/LICENSE) [![Last commit](https://img.shields.io/github/last-commit/Asifmd45/LLM-PROP)](https://github.com/Asifmd45/LLM-PROP/commits/main) [![Repo size](https://img.shields.io/github/repo-size/Asifmd45/LLM-PROP)](https://github.com/Asifmd45/LLM-PROP) [![Stars](https://img.shields.io/github/stars/Asifmd45/LLM-PROP?style=social)](https://github.com/Asifmd45/LLM-PROP/stargazers)
 
 --
 
 **Project description**
-- TRANS-PROP is a local research and prototyping toolkit that converts free-form crystal/material descriptions into quantitative property predictions (e.g., band gap, energy per atom, formation energy, volume, stability indicators). It provides an end-to-end developer workflow so researchers and engineers can test prompts, compare model checkpoints, and persist prediction history for analysis.
+- LLM-PROP is a local research and prototyping toolkit that converts free-form crystal/material descriptions into quantitative property predictions (e.g., band gap, energy per atom, formation energy, volume, stability indicators). It provides an end-to-end developer workflow so researchers and engineers can test prompts, compare model checkpoints, and persist prediction history for analysis.
 
 **Primary components**
 - `frontend/` — React + Vite UI for entering descriptions, viewing predictions, and inspecting per-user history.
