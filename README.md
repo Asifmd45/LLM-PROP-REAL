@@ -4,7 +4,7 @@
 Modern, local inference stack for crystal/material property prediction.
 The project exposes a React frontend that talks to an Express middleware which forwards requests to a FastAPI ML backend that runs model inference.
 
-Badges: [build] [license] [last commit]
+[![License](https://img.shields.io/github/license/Asifmd45/TRANS-PROP)](https://github.com/Asifmd45/TRANS-PROP/blob/main/LICENSE) [![Last commit](https://img.shields.io/github/last-commit/Asifmd45/TRANS-PROP)](https://github.com/Asifmd45/TRANS-PROP/commits/main) [![Repo size](https://img.shields.io/github/repo-size/Asifmd45/TRANS-PROP)](https://github.com/Asifmd45/TRANS-PROP) [![Stars](https://img.shields.io/github/stars/Asifmd45/TRANS-PROP?style=social)](https://github.com/Asifmd45/TRANS-PROP/stargazers)
 
 --
 
@@ -241,5 +241,3 @@ curl -X POST http://127.0.0.1:5000/api/predict \
 - See `LICENSE` in the repo root.
 
 ---
-
-If you want, I can also paste this into the repo as `README.md`, create `README_QUICKSTART.md`, and add `express-server/.env.example` now.
