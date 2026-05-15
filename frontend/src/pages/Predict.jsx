@@ -232,6 +232,26 @@ export default function Predict() {
             <p className="text-sm text-red-400 mb-6">{error}</p>
           )}
 
+          {loading && (
+            <div className="glass-card rounded-2xl p-6 mb-8 animate-fade-in-up" aria-live="polite" aria-busy="true">
+              <h2 className="text-base font-semibold text-foreground mb-5 flex items-center gap-2">
+                <FlaskConical className="w-4 h-4 text-primary" />
+                Generating Prediction
+              </h2>
+              <div className="grid grid-cols-2 gap-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={`prediction-skeleton-${i}`}
+                    className="rounded-xl p-4 bg-muted/60 border border-border"
+                  >
+                    <div className="skeleton-shimmer h-3 w-24 rounded mb-3" />
+                    <div className="skeleton-shimmer h-6 w-20 rounded" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Results */}
           {results && (
             <div
@@ -269,7 +289,24 @@ export default function Predict() {
             </h2>
 
             {historyLoading && (
-              <p className="text-sm text-muted-foreground">Loading history...</p>
+              <div className="space-y-3" aria-live="polite" aria-busy="true">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={`history-skeleton-${i}`} className="rounded-xl p-4 bg-muted/60 border border-border">
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <div className="skeleton-shimmer h-3 w-40 rounded" />
+                      <div className="skeleton-shimmer h-3 w-24 rounded" />
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {Array.from({ length: 6 }).map((__, j) => (
+                        <div key={`history-prop-skeleton-${i}-${j}`} className="rounded-lg px-2 py-2 bg-background/50 border border-border">
+                          <div className="skeleton-shimmer h-2.5 w-16 rounded mb-2" />
+                          <div className="skeleton-shimmer h-3.5 w-12 rounded" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
 
             {historyError && (

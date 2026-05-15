@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +13,29 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
+function AppRoutes() {
+  const location = useLocation();
+
+  return (
+    <div key={location.pathname} className="route-transition">
+      <Routes location={location}>
+        <Route path="/" element={<Index />} />
+        <Route
+          path="/predict"
+          element={(
+            <ProtectedRoute>
+              <Predict />
+            </ProtectedRoute>
+          )}
+        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </div>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -20,20 +43,7 @@ const App = () => (
       <Sonner />
       <CursorGlow />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route
-            path="/predict"
-            element={(
-              <ProtectedRoute>
-                <Predict />
-              </ProtectedRoute>
-            )}
-          />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

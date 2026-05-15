@@ -11,7 +11,7 @@ export default function CursorGlow() {
     if (!el) return;
     const move = (e) => {
       el.style.left = `${e.clientX}px`;
-      el.style.top  = `${e.clientY}px`;
+      el.style.top = `${e.clientY}px`;
     };
     window.addEventListener("mousemove", move);
     return () => window.removeEventListener("mousemove", move);

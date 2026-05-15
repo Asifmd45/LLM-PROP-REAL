@@ -1,56 +1,150 @@
-# TRANS-PROP Local Setup Guide
+<!-- Improved README: project overview, architecture, quickstart, and troubleshooting -->
+# TRANS-PROP (LLM-PROP)
 
-TRANS-PROP runs as a 3-layer local stack:
+Modern, local inference stack for crystal/material property prediction.
+The project exposes a React frontend that talks to an Express middleware which forwards requests to a FastAPI ML backend that runs model inference.
 
-- React frontend: `frontend`
-- Express middleware: `express-server`
-- FastAPI ML backend: `LLM-Prop/models_deployment`
+Badges: [build] [license] [last commit]
 
-Request flow:
+--
 
-`React -> Express -> FastAPI -> Express -> React`
+**Project description**
+- TRANS-PROP is a local research and prototyping toolkit that converts free-form crystal/material descriptions into quantitative property predictions (e.g., band gap, energy per atom, formation energy, volume, stability indicators). It provides an end-to-end developer workflow so researchers and engineers can test prompts, compare model checkpoints, and persist prediction history for analysis.
 
-## Quick Start Checklist
+**Primary components**
+- `frontend/` — React + Vite UI for entering descriptions, viewing predictions, and inspecting per-user history.
+- `express-server/` — Node + Express middleware providing authentication, per-user prediction history (MongoDB), and a proxy to the ML backend.
+- `LLM-Prop/models_deployment/` — FastAPI service that loads tokenizers and checkpoints and runs the inference pipeline.
 
-1. Install prerequisites.
-2. Clone repository.
-3. Download required ML assets (data + checkpoints).
-4. Create and activate Python virtual environment.
-5. Install Python and Node dependencies.
-6. Start 3 services (FastAPI, Express, React).
-7. Open `http://localhost:8080/predict`.
+**Target users & use cases**
+- Materials researchers who want quick, reproducible local inference without cloud deployments.
+- Engineers integrating property prediction into downstream tooling or dashboards.
+- Use cases: exploratory prompt engineering, batch-evaluation of candidate materials, or recording predictions for human curation.
 
-## 1. Prerequisites
+**Example input & output**
+Input (free-text):
 
-- Python `3.10+`
-- Node.js `18+`
-- npm `9+`
+```json
+{
+  "text": "Rb2NaPrCl6 is perovskite-derived and crystallizes in the cubic Fm-3m space group."
+}
+```
 
-Verify versions:
+Example output (unified JSON):
 
-```bash
+```json
+{
+  "is_gap_direct": true,
+  "energy_per_atom": -3.142,
+  "formation_energy_per_atom": -0.153,
+  "band_gap": 1.25,
+  "e_above_hull": 0.05,
+  "volume": 214.3
+}
+```
+
+Field meanings & quick interpretation
+- `is_gap_direct` (bool): whether the model predicts a direct band gap. Use as a categorical indicator.
+- `band_gap` (eV): estimated band gap energy. Compare to experimental ranges and treat as approximate.
+- `energy_per_atom` & `formation_energy_per_atom` (eV): lower (more negative) typically indicates more stable structures.
+- `e_above_hull` (eV): distance above the convex hull — values near zero suggest potential thermodynamic stability; >0.1 eV often indicates metastability.
+- `volume` (Å^3): predicted unit-cell volume. Useful for sanity checks and downstream geometry expectations.
+
+Important: the model's numeric outputs are approximate; validate with DFT or experiments for final decisions.
+
+**Recommended workflows**
+- Quick prompt test: use the `frontend` to iterate on a single description and observe how numeric outputs change.
+- Batch evaluation: POST multiple descriptions via the Express API and store results for statistical analysis.
+- Checkpoint comparison: swap checkpoint files in `LLM-Prop/checkpoints/` and re-run identical inputs to compare model behavior.
+
+**Limitations & caveats**
+- Model uncertainty: predictions are not ground truth; use them for triage, not final validation.
+- Input sensitivity: phrasing and missing structural details can change predictions; prefer consistent, descriptive inputs.
+- Data & checkpoint dependence: different checkpoints produce different biases — always document which checkpoint produced results.
+
+**Quick architecture & flow**
+
+React (UI) ↔ Express (API + auth + history) ↔ FastAPI (ML inference)
+
+- Frontend: user types a material description and hits Predict.
+- Express: performs auth, rate-limits, persists per-user prediction history in MongoDB, and proxies prediction requests to FastAPI.
+- FastAPI: loads tokenizer/checkpoints at startup and runs the inference pipeline, returning unified JSON responses.
+
+Ports (defaults):
+- Frontend: 8080 (Vite dev)
+- Express: 5000
+- FastAPI: 8000
+
+--
+
+Table of contents
+- Features
+- Quickstart (one-page)
+- Full setup (detailed)
+- ML assets
+- Env & MongoDB Atlas
+- Running the stack
+- Health checks & testing
+- Troubleshooting
+- Contributing
+
+## Features
+- End-to-end local dev stack for inference
+- Per-user persistent prediction history (MongoDB)
+- FastAPI ML inference using local model checkpoints
+- Lightweight Express middleware for auth and request orchestration
+
+## Quickstart (one-page)
+See `README_QUICKSTART.md` for a minimal set of commands to get started.
+
+## Full setup (detailed)
+
+Prerequisites
+- Python 3.10+ (create virtualenv)
+- Node.js 18+ and npm 9+
+
+Verify:
+
+```powershell
 python --version
 node --version
 npm --version
 ```
 
-## 2. Clone Repository
+Clone
 
 ```bash
 git clone <your-repo-url>
 cd <repo-folder-name>
 ```
 
-## 3. Download Required ML Assets (Data + Checkpoints)
+Python environment
 
-These files are required for inference output and are not stored in this GitHub repository.
+```bash
+python -m venv .venv
+```
 
-- Data folder (Google Drive):
-  - https://drive.google.com/drive/folders/1DA2osXEhV0gcONDXE2-E-gqGWMqNsJ84?usp=drive_link
-- Checkpoints folder (Google Drive, classification + regression):
-  - https://drive.google.com/drive/folders/1jruYBaxGfU7MpgVQRCHr9OolkBDIMgAx?usp=drive_link
+Activate (PowerShell):
 
-Place files exactly at these paths:
+```powershell
+(Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned) ; .\.venv\Scripts\Activate.ps1
+```
+
+Install Python deps
+
+```bash
+pip install -r LLM-Prop/requirements.txt
+```
+
+Install Node deps
+
+```bash
+cd express-server && npm install && cd ..
+cd frontend && npm install && cd ..
+```
+
+## ML assets (checkpoints & data)
+This repo excludes large model artifacts. Download the required assets and place them exactly as below.
 
 - `LLM-Prop/data/samples/train_data.csv`
 - `LLM-Prop/checkpoints/samples/classification/best_checkpoint_for_is_gap_direct.pt`
@@ -60,130 +154,58 @@ Place files exactly at these paths:
 - `LLM-Prop/checkpoints/samples/regression/best_checkpoint_for_e_above_hull.pt`
 - `LLM-Prop/checkpoints/samples/regression/best_checkpoint_for_volume.pt`
 
-Quick check on Windows PowerShell:
+Verify on Windows PowerShell:
 
 ```powershell
 Test-Path "LLM-Prop/data/samples/train_data.csv"
-Test-Path "LLM-Prop/checkpoints/samples/classification/best_checkpoint_for_is_gap_direct.pt"
-Test-Path "LLM-Prop/checkpoints/samples/regression/best_checkpoint_for_energy_per_atom.pt"
-Test-Path "LLM-Prop/checkpoints/samples/regression/best_checkpoint_for_fepa.pt"
-Test-Path "LLM-Prop/checkpoints/samples/regression/best_checkpoint_for_band_gap.pt"
-Test-Path "LLM-Prop/checkpoints/samples/regression/best_checkpoint_for_e_above_hull.pt"
-Test-Path "LLM-Prop/checkpoints/samples/regression/best_checkpoint_for_volume.pt"
 ```
 
-## 4. Create and Activate Python Virtual Environment
+## Env variables & MongoDB Atlas
+Create `express-server/.env` from the template `express-server/.env.example`.
 
-Create:
+Required variables:
 
-```bash
-python -m venv .venv
-```
+- `MONGODB_URI` — your MongoDB Atlas connection string (mongodb+srv://...)
+- `JWT_SECRET` — random string used to sign JWTs
+- `FASTAPI_URL` — e.g. `http://127.0.0.1:8000`
+- `PORT` — port for Express (default `5000`)
 
-Activate on Windows PowerShell:
+Atlas quick steps:
+1. Create a free cluster at https://www.mongodb.com/atlas
+2. Add a Database User (save username/password)
+3. Add network access: add your public IP or `0.0.0.0/0` for quick local testing
+4. Copy the connection string and paste into `MONGODB_URI` in your `.env`
+
+**Warning:** do NOT commit secrets. Add `.env` to `.gitignore`.
+
+## Run the stack (three terminals)
+
+PowerShell (recommended) — open three terminals and run:
+
+Terminal A — FastAPI
 
 ```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-Activate on Windows CMD:
-
-```bat
-.venv\Scripts\activate.bat
-```
-
-Activate on macOS/Linux:
-
-```bash
-source .venv/bin/activate
-```
-
-## 5. Install Dependencies
-
-Install Python packages:
-
-```bash
-pip install -r LLM-Prop/requirements.txt
-pip install fastapi uvicorn
-```
-
-Install Node packages:
-
-```bash
-cd express-server
-npm install
-cd ..
-
-cd frontend
-npm install
-cd ..
-```
-
-## 5.1 Database Setup (MongoDB Atlas + .env)
-
-MongoDB is required for authentication and prediction history.
-
-1. Create a MongoDB Atlas account:
-  - Go to https://www.mongodb.com/atlas
-  - Create a free cluster.
-
-2. Create database access user:
-  - Atlas Dashboard -> Database Access -> Add New Database User
-  - Save username/password.
-
-3. Allow network access:
-  - Atlas Dashboard -> Network Access -> Add IP Address
-  - For local testing, you can temporarily allow `0.0.0.0/0`.
-
-4. Get connection string:
-  - Atlas Dashboard -> Clusters -> Connect -> Drivers
-  - Copy the `mongodb+srv://...` URI.
-
-5. Configure Express env file:
-  - Copy `express-server/.env.example` to `express-server/.env`
-  - Fill values:
-
-```env
-MONGODB_URI=<your_mongodb_atlas_connection_string>
-JWT_SECRET=<your_random_jwt_secret>
-FASTAPI_URL=http://127.0.0.1:8000
-PORT=5000
-```
-
-Notes:
-- Do not commit `.env`.
-- `.env.example` is tracked as template only.
-
-## 6. Run Locally (Open 3 Terminals)
-
-Run each service in a separate terminal.
-
-Terminal A: FastAPI backend (port 8000)
-
-```bash
 cd LLM-Prop/models_deployment
 python -m uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
-Terminal B: Express middleware (port 5000)
+Terminal B — Express
 
-```bash
+```powershell
 cd express-server
 npm run dev
 ```
 
-Terminal C: React frontend (port 8080)
+Terminal C — Frontend
 
-```bash
+```powershell
 cd frontend
 npm run dev
 ```
 
-Open:
+Open the UI: `http://localhost:8080/predict`
 
-`http://localhost:8080/predict`
-
-## 7. Health Checks
+## Health checks & API tests
 
 FastAPI:
 
@@ -197,56 +219,27 @@ Express:
 curl http://127.0.0.1:5000/health
 ```
 
-## 8. Optional API Test
-
-Test prediction through Express:
+Quick predict test (Express proxy):
 
 ```bash
 curl -X POST http://127.0.0.1:5000/api/predict \
   -H "Content-Type: application/json" \
-  -d "{\"text\":\"Rb2NaPrCl6 is perovskite-derived and crystallizes in the cubic Fm-3m space group.\"}"
+  -d '{"text":"Rb2NaPrCl6 is perovskite-derived and crystallizes in the cubic Fm-3m space group."}'
 ```
 
-## How Crystal Description Flows Through the ML Layer
+## Troubleshooting (common issues)
 
-When you enter a crystal/material description on `/predict`, the request path is:
+- `Failed to fetch` (frontend): ensure Express and FastAPI are running and `FASTAPI_URL` in `.env` is correct.
+- MongoDB connection errors: ensure Atlas IP is whitelisted and `MONGODB_URI` credentials are valid.
+- Slow FastAPI health: model loading can take time; wait for `model_loaded: true` in `/health`.
+- PowerShell activation blocked: run `(Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned)`.
 
-1. React sends JSON to Express:
+## Contributing
+- Fork, create a feature branch, and open a PR. Keep ML checkpoints and secrets out of VCS.
 
-```json
-{
-  "text": "your crystal description"
-}
-```
+## License
+- See `LICENSE` in the repo root.
 
-2. Express forwards the request to FastAPI (`/predict`) without changing ML logic.
-3. FastAPI calls the existing inference pipeline in `LLM-Prop/models_deployment/predict_all.py`.
-4. Predictor modules load model checkpoints/tokenizer/data and compute outputs.
-5. FastAPI returns a unified response to Express.
-6. Express returns the response to React.
-7. React displays prediction values in the UI.
+---
 
-Displayed output fields:
-
-- `is_gap_direct`
-- `energy_per_atom`
-- `formation_energy_per_atom`
-- `band_gap`
-- `e_above_hull`
-- `volume`
-
-## Troubleshooting
-
-- `Failed to fetch` in frontend:
-  - Confirm FastAPI (`8000`) and Express (`5000`) are running.
-- Port already in use:
-  - Stop existing process on that port, then restart services.
-- PowerShell blocks virtual environment activation:
-  - Run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`
-  - Then run `.\.venv\Scripts\Activate.ps1` again.
-- `npm run dev` fails:
-  - Re-run `npm install` in both `express-server` and `frontend`.
-
-## Notes
-
-- Do not commit local runtime artifacts such as `.venv`, editor folders, large datasets, or checkpoints.
+If you want, I can also paste this into the repo as `README.md`, create `README_QUICKSTART.md`, and add `express-server/.env.example` now.
