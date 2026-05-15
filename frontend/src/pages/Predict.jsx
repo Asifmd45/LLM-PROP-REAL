@@ -360,7 +360,14 @@ export default function Predict() {
                       animation: "fadeInUp 0.5s ease-out both",
                     }}
                   >
-                    <p className="text-xs text-muted-foreground mb-1">{r.property}</p>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      {r.property === "is_gap_direct" && "is_gap_direct"}
+                      {r.property === "energy_per_atom" && "energy_per_atom (eV/atom)"}
+                      {r.property === "formation_energy_per_atom" && "formation_energy_per_atom (eV/atom)"}
+                      {r.property === "band_gap" && "band_gap (eV)"}
+                      {r.property === "e_above_hull" && "e_above_hull (eV/atom)"}
+                      {r.property === "volume" && "volume (ų)"}
+                    </p>
                     <p className="text-lg font-bold text-primary font-mono">{r.value}</p>
                   </div>
                 ))}
