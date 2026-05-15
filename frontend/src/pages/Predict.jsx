@@ -253,6 +253,16 @@ export default function Predict() {
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
+              {/* Quick helper if user doesn't know how to describe the material */}
+              <div className="mt-2 flex justify-end">
+                <button
+                  onClick={() => setChatOpen(true)}
+                  className="text-sm font-semibold text-primary hover:underline"
+                  title="Need help describing the material"
+                >
+                  Don't know the description?
+                </button>
+              </div>
             </div>
           </div>
 
@@ -496,18 +506,7 @@ export default function Predict() {
           </div>
         )}
 
-        {/* Toggle FAB */}
-        <button
-          onClick={() => setChatOpen(o => !o)}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl font-medium text-xs transition-all hover:scale-[1.05] active:scale-95 shadow-xl ${
-            chatOpen
-              ? "bg-muted border border-border text-muted-foreground"
-              : "bg-primary text-primary-foreground animate-pulse-glow"
-          }`}
-        >
-          <MessageCircle className="w-4 h-4" />
-          {chatOpen ? "Close" : "Don't know the description?"}
-        </button>
+        {/* Floating chat toggle removed; inline helper button is used instead */}
       </div>
 
       <Footer />
