@@ -11,14 +11,6 @@ import {
 const EXPRESS_BASE_URL = import.meta.env.VITE_EXPRESS_BASE_URL || "";
 const TOKEN_KEY = "llmprop_token";
 
-const chatResponses = {
-  nacl:  "Sodium chloride (NaCl) crystallizes in a rock salt structure (Fm-3m) with a face-centered cubic lattice. Lattice parameter a = 5.64 Å. Each Na⁺ is surrounded by 6 Cl⁻ ions.",
-  sio2:  "Silicon dioxide (SiO2) forms a tetrahedral network. In its α-quartz polymorph, it has a trigonal crystal system (P3₂21) with a = 4.91 Å, c = 5.40 Å.",
-  tio2:  "Titanium dioxide (TiO2) in rutile structure has tetragonal symmetry (P4₂/mnm) with a = 4.59 Å, c = 2.96 Å. Each Ti is coordinated by 6 oxygen atoms.",
-  fe2o3: "Iron(III) oxide (Fe2O3) hematite has a rhombohedral structure (R-3c) with a = 5.04 Å, c = 13.75 Å. Each Fe is octahedrally coordinated by 6 oxygen atoms.",
-  gaas:  "Gallium arsenide (GaAs) adopts a zinc-blende structure (F-43m) with a = 5.65 Å. It is a direct-bandgap semiconductor used in optoelectronics.",
-};
-
 export default function Predict() {
   const navigate = useNavigate();
   const [input,   setInput]   = useState("");
@@ -31,21 +23,14 @@ export default function Predict() {
   const [clearingHistory, setClearingHistory] = useState(false);
   const [revealed, setRevealed] = useState(false);
 
-  // Chat state
   const [chatOpen,  setChatOpen]  = useState(false);
   const [chatInput, setChatInput] = useState("");
-  const [chatMessages, setChatMessages] = useState([
-    { role: "bot", text: "Hi! Enter a chemical formula (e.g. NaCl, TiO2) and I'll generate its crystal description for you." },
-  ]);
-  const lastBotMsg = chatMessages.filter(m => m.role === "bot").at(-1)?.text ?? "";
-  const chatBodyRef = useRef(null);
-
-  // Scroll to bottom on new message
+  const [descriptionResult, setDescriptionResult] = useState("");
+  const [descriptionLoading, setDescriptionLoading] = useState(false);
+  const [descriptionError, setDescriptionError] = useState("");
   useEffect(() => {
-    if (chatBodyRef.current) {
-      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
-    }
-  }, [chatMessages, chatOpen]);
+    // Keep the helper panel in view when new content appears.
+  }, [descriptionResult, descriptionError, descriptionLoading, chatOpen]);
 
   // Scroll reveal for results
   useEffect(() => {
@@ -191,22 +176,69 @@ export default function Predict() {
     }
   };
 
-  const handleChat = () => {
-    if (!chatInput.trim()) return;
-    const q = chatInput.trim();
-    setChatMessages(prev => [...prev, { role: "user", text: q }]);
-    setChatInput("");
-    setTimeout(() => {
-      const key = q.toLowerCase().replace(/\s/g, "");
-      const reply = chatResponses[key] ??
-        `Crystal description for "${q}": A crystalline material with formula ${q}, exhibiting a periodic atomic arrangement with characteristic bond lengths and coordination polyhedra. Enter a well-known compound like NaCl or TiO2 for detailed structural data.`;
-      setChatMessages(prev => [...prev, { role: "bot", text: reply }]);
-    }, 700);
+  const extractItems = (payload) => {
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload?.data)) return payload.data;
+    if (Array.isArray(payload?.results)) return payload.results;
+    return [];
+  };
+
+  const fetchMaterialDescription = async (formula) => {
+      // Call backend proxy to avoid CORS and keep API key on server
+      const base = EXPRESS_BASE_URL || "";
+      const resp = await fetch(`${base}/api/mp/description`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ formula }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || "Could not fetch description from server");
+      }
+
+      const payload = await resp.json();
+      if (!payload?.description) throw new Error("No description returned");
+      return payload.description;
   };
 
   const useDescription = () => {
-    setInput(lastBotMsg);
+    if (descriptionResult) {
+      setInput(descriptionResult);
+    }
     setChatOpen(false);
+  };
+
+  const handleDescriptionLookup = async () => {
+    const raw = chatInput.trim();
+    const formula = raw && raw.length ? normalizeFormula(raw) : "";
+    if (!formula) return;
+
+    setDescriptionLoading(true);
+    setDescriptionError("");
+    setDescriptionResult("");
+
+    try {
+      const paragraph = await fetchMaterialDescription(formula);
+      setDescriptionResult(paragraph);
+      setChatInput(formula);
+    } catch (err) {
+      setDescriptionError(err.message || "Could not fetch material data");
+    } finally {
+      setDescriptionLoading(false);
+    }
+  };
+
+  // Normalize unicode subscripts/superscripts to ASCII digits
+  const normalizeFormula = (s) => {
+    if (!s) return s;
+    const sub = {
+      '\u2080': '0','\u2081': '1','\u2082': '2','\u2083': '3','\u2084': '4','\u2085': '5','\u2086': '6','\u2087': '7','\u2088': '8','\u2089': '9'
+    };
+    const sup = {
+      '\u2070': '0','\u00B9': '1','\u00B2': '2','\u00B3': '3','\u2074': '4','\u2075': '5','\u2076': '6','\u2077': '7','\u2078': '8','\u2079': '9'
+    };
+    return Array.from(s).map(ch => sub[ch] ?? sup[ch] ?? ch).join('');
   };
 
   return (
@@ -456,52 +488,65 @@ export default function Predict() {
               </button>
             </div>
 
-            {/* Messages */}
-            <div ref={chatBodyRef} className="flex-1 overflow-y-auto p-3 space-y-2">
-              {chatMessages.map((m, i) => (
-                <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[85%] px-3 py-2 rounded-xl text-xs leading-relaxed ${
-                      m.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-foreground border border-border"
-                    }`}
+            {/* Result area */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {!descriptionResult && !descriptionError && !descriptionLoading && (
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Enter a formula and click search to generate a description.
+                </p>
+              )}
+
+              {descriptionLoading && (
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Fetching Materials Project data...
+                </p>
+              )}
+
+              {descriptionError && (
+                <p className="text-xs text-red-400 leading-relaxed">
+                  {descriptionError}
+                </p>
+              )}
+
+              {descriptionResult && !descriptionError && (
+                <div className="rounded-xl border border-border bg-background/70 p-3 space-y-2">
+                  <p className="text-xs text-foreground leading-relaxed">
+                    {descriptionResult}
+                  </p>
+                  <button
+                    onClick={useDescription}
+                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/20 transition-all hover:scale-[1.02] active:scale-95"
                   >
-                    {m.text}
-                  </div>
+                    <ClipboardPaste className="w-3.5 h-3.5" />
+                    Use Description
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
 
-            {/* Use Description button (shows after any bot reply) */}
-            {chatMessages.length > 1 && (
-              <div className="px-3 pb-1">
+            {/* Input */}
+            <div className="p-3 border-t border-border space-y-3">
+              <div className="flex gap-2">
+                <input
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleDescriptionLookup()}
+                  placeholder="Type formula (e.g. NaCl)"
+                  className="flex-1 bg-muted border border-border rounded-lg px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                />
                 <button
-                  onClick={useDescription}
-                  className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/20 transition-all hover:scale-[1.02] active:scale-95"
+                  onClick={handleDescriptionLookup}
+                  disabled={!chatInput.trim() || descriptionLoading}
+                  className="p-1.5 bg-primary text-primary-foreground rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-40"
                 >
-                  <ClipboardPaste className="w-3.5 h-3.5" />
-                  Use Description
+                  {descriptionLoading ? (
+                    <div className="w-3.5 h-3.5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                  ) : (
+                    <Send className="w-3.5 h-3.5" />
+                  )}
                 </button>
               </div>
-            )}
 
-            {/* Input */}
-            <div className="p-3 border-t border-border flex gap-2">
-              <input
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleChat()}
-                placeholder="Type formula (e.g. NaCl)"
-                className="flex-1 bg-muted border border-border rounded-lg px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all"
-              />
-              <button
-                onClick={handleChat}
-                disabled={!chatInput.trim()}
-                className="p-1.5 bg-primary text-primary-foreground rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-40"
-              >
-                <Send className="w-3.5 h-3.5" />
-              </button>
             </div>
           </div>
         )}

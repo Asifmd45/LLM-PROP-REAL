@@ -1,5 +1,7 @@
 import "dotenv/config";
 import express from "express";
+import axios from "axios";
+import cors from "cors";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { connectMongo, getMongoStatus } from "./db.js";
@@ -15,6 +17,9 @@ const fastApiBaseUrl =
   "http://127.0.0.1:8000";
 
 app.use(express.json());
+// allow frontend dev host (or set CLIENT_ORIGIN env) — adjust for production
+const clientOrigin = process.env.CLIENT_ORIGIN || "*";
+app.use(cors({ origin: clientOrigin }));
 
 app.get("/health", (_req, res) => {
   res.json({
@@ -193,6 +198,60 @@ app.delete("/api/predictions", requireAuth, async (req, res) => {
     return res.status(500).json({
       detail: "Could not clear prediction history",
     });
+  }
+});
+
+// Proxy Materials Project description lookup to avoid browser CORS and hide API key
+app.post("/api/mp/description", async (req, res) => {
+  try {
+    // normalize unicode subscripts/superscripts to ASCII digits
+    const rawFormula = String(req.body?.formula || "").trim();
+    const subs = { '\u2080':'0','\u2081':'1','\u2082':'2','\u2083':'3','\u2084':'4','\u2085':'5','\u2086':'6','\u2087':'7','\u2088':'8','\u2089':'9' };
+    const sups = { '\u2070':'0','\u00B9':'1','\u00B2':'2','\u00B3':'3','\u2074':'4','\u2075':'5','\u2076':'6','\u2077':'7','\u2078':'8','\u2079':'9' };
+    const formula = Array.from(rawFormula).map(ch => subs[ch] || sups[ch] || ch).join('');
+    if (!formula) return res.status(400).json({ error: "formula is required" });
+
+    const mpKey = process.env.MP_API_KEY || process.env.REACT_APP_MP_API_KEY;
+    if (!mpKey) return res.status(500).json({ error: "Materials Project API key not configured on server" });
+
+    const headers = {
+      "x-api-key": mpKey,
+      Accept: "application/json",
+      "User-Agent": "LLMProp/1.0 (+https://materialsproject.org)",
+    };
+
+    // 1) search summary by formula
+    const summaryResp = await axios.get("https://api.materialsproject.org/materials/summary/", {
+      params: { formula },
+      headers,
+      timeout: 10000,
+    });
+
+    const candidates = summaryResp?.data?.data || [];
+    if (!Array.isArray(candidates) || candidates.length === 0) {
+      return res.status(404).json({ error: `No Materials Project entry found for ${formula}` });
+    }
+
+    const normalizedFormula = formula.replace(/\s+/g, "").toLowerCase();
+    const match = candidates.find((item) => String(item?.formula_pretty || "").replace(/\s+/g, "").toLowerCase() === normalizedFormula) || candidates[0];
+    const materialId = match?.material_id;
+    if (!materialId) return res.status(404).json({ error: `No material_id found for ${formula}` });
+
+    // 2) fetch robocrys details
+    const roboResp = await axios.get("https://api.materialsproject.org/materials/robocrys/", {
+      params: { material_ids: materialId, _all_fields: true },
+      headers,
+      timeout: 10000,
+    });
+
+    const record = roboResp?.data?.data?.[0] || null;
+    const description = record?.description ?? null;
+    if (!description) return res.status(404).json({ error: "Materials Project did not return a description for this formula" });
+
+    return res.json({ description });
+  } catch (err) {
+    console.error("MP proxy error:", err?.message || err);
+    return res.status(500).json({ error: "Materials Project fetch failed" });
   }
 });
 
