@@ -28,6 +28,7 @@ export default function Predict() {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
+  const [clearingHistory, setClearingHistory] = useState(false);
   const [revealed, setRevealed] = useState(false);
 
   // Chat state
@@ -143,6 +144,50 @@ export default function Predict() {
       setError(err.message || "Could not connect to the API");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const clearAllHistory = async () => {
+    const confirmed = window.confirm(
+      "Clear all saved prediction history? This cannot be undone."
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setClearingHistory(true);
+
+    try {
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (!token) {
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      const response = await fetch(`${EXPRESS_BASE_URL}/api/predictions`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem(TOKEN_KEY);
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error("Could not clear prediction history");
+      }
+
+      setHistory([]);
+      await loadHistory();
+    } catch (err) {
+      setHistoryError(err.message || "Could not clear prediction history");
+    } finally {
+      setClearingHistory(false);
     }
   };
 
@@ -283,10 +328,21 @@ export default function Predict() {
 
           {/* Prediction history */}
           <div className="glass-card rounded-2xl p-6 mt-8 animate-fade-in-up" style={{ animationDelay: "320ms" }}>
-            <h2 className="text-base font-semibold text-foreground mb-5 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-              Prediction History
-            </h2>
+            <div className="flex items-center justify-between gap-3 mb-5">
+              <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                Prediction History
+              </h2>
+              {!historyLoading && history.length > 0 && (
+                <button
+                  onClick={clearAllHistory}
+                  disabled={clearingHistory}
+                  className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {clearingHistory ? "Clearing..." : "Clear All"}
+                </button>
+              )}
+            </div>
 
             {historyLoading && (
               <div className="space-y-3" aria-live="polite" aria-busy="true">

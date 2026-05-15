@@ -181,6 +181,21 @@ app.get("/api/predictions", requireAuth, async (req, res) => {
   }
 });
 
+app.delete("/api/predictions", requireAuth, async (req, res) => {
+  try {
+    const result = await Prediction.deleteMany({ userId: req.user.userId });
+
+    return res.json({
+      message: "Prediction history cleared",
+      deletedCount: result.deletedCount ?? 0,
+    });
+  } catch (_error) {
+    return res.status(500).json({
+      detail: "Could not clear prediction history",
+    });
+  }
+});
+
 async function startServer() {
   try {
     await connectMongo();
