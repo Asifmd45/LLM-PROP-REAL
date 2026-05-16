@@ -11,6 +11,15 @@ import {
 const EXPRESS_BASE_URL = import.meta.env.VITE_EXPRESS_BASE_URL || "";
 const TOKEN_KEY = "llmprop_token";
 
+const DEMO_DESCRIPTIONS = {
+  NaCl:
+    "Sodium Chloride (NaCl) crystallizes in a rock salt structure (Fm-3m) with a face-centered cubic lattice. Lattice parameter a = 5.64 Å. Each Na⁺ is surrounded by 6 Cl⁻ ions in an octahedral coordination. It has a band gap of 8.5 eV and is an ionic insulator.",
+  TiO2:
+    "Titanium Dioxide (TiO2) crystallizes in the rutile structure (P42/mnm) with a tetragonal lattice. Lattice parameters a = 4.59 Å, c = 2.96 Å. Each Ti⁴⁺ is coordinated by 6 O²⁻ ions. It has a band gap of 3.0 eV and is widely used in photocatalysis.",
+  Fe2O3:
+    "Iron(III) Oxide (Fe2O3) crystallizes in the corundum structure (R-3c) with a hexagonal lattice. Lattice parameter a = 5.04 Å, c = 13.75 Å. Each Fe³⁺ is octahedrally coordinated by 6 O²⁻ ions. It has a band gap of 2.2 eV and is commonly known as hematite.",
+};
+
 export default function Predict() {
   const navigate = useNavigate();
   const [input,   setInput]   = useState("");
@@ -209,6 +218,18 @@ export default function Predict() {
     setChatOpen(false);
   };
 
+  const applyDemoFormula = (formula) => {
+    const description = DEMO_DESCRIPTIONS[formula];
+    if (!description) return;
+
+    setInput(description);
+    setChatInput(formula);
+    setDescriptionError("");
+    setDescriptionLoading(false);
+    setDescriptionResult(description);
+    setChatOpen(true);
+  };
+
   const handleDescriptionLookup = async () => {
     const raw = chatInput.trim();
     const formula = raw && raw.length ? normalizeFormula(raw) : "";
@@ -268,6 +289,19 @@ export default function Predict() {
             className="glass-card rounded-2xl p-6 mb-5 animate-fade-in-up"
             style={{ animationDelay: "180ms" }}
           >
+            <div className="mb-3 flex flex-wrap gap-2">
+              {Object.keys(DEMO_DESCRIPTIONS).map((formula) => (
+                <button
+                  key={formula}
+                  type="button"
+                  onClick={() => applyDemoFormula(formula)}
+                  className="inline-flex items-center rounded-full border border-blue-400/20 bg-slate-950/70 px-3 py-1 text-[11px] font-semibold text-sky-200/90 shadow-[0_0_0_1px_rgba(59,130,246,0.08)] transition-all hover:border-blue-300/40 hover:bg-slate-900/90 hover:text-sky-100 active:scale-95"
+                >
+                  {formula}
+                </button>
+              ))}
+            </div>
+
             <div className="relative">
               <textarea
                 id="crystal-description"

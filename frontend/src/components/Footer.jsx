@@ -56,7 +56,7 @@ export default function Footer() {
               References
             </h4>
             <a
-              href="https://github.com"
+              href="https://github.com/Asifmd45/LLM-PROP-REAL"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors group"
@@ -65,16 +65,16 @@ export default function Footer() {
               GitHub Repository
             </a>
             <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
-              npj Computational Materials — LLM-Prop: Predicting physical and electronic
+              LLM-Prop: Predicting physical and electronic
               properties of crystalline solids from their text descriptions.
             </p>
           </div>
         </div>
 
         <div className="border-t border-border/50 mt-12 pt-6 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-          <span>© 2025 LLM-PROP · Crystal Property Prediction</span>
+          <span>© 2026 LLM-PROP · Crystal Property Prediction</span>
           <span className="flex items-center gap-1">
-            Built with <Atom className="w-3 h-3 text-primary mx-0.5" /> T5 + React
+            Built with <Atom className="w-3 h-3 text-primary mx-0.5" /> React
           </span>
         </div>
       </div>

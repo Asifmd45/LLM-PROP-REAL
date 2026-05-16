@@ -5,9 +5,9 @@ import { Link } from "react-router-dom";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const stats = [
-  { value: "99.1%", label: "Test Accuracy" },
+  { value: "93.1%", label: "Test Accuracy" },
   { value: "<0.5s", label: "Avg. Prediction Time" },
-  { value: "10+", label: "Properties Predicted" },
+  { value: "6", label: "Properties Predicted" },
 ];
 
 export default function HeroSection() {
