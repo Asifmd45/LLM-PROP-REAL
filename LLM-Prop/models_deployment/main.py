@@ -14,12 +14,12 @@ PROJECT_DIR = Path(__file__).resolve().parent.parent
 HF_REPO_ID = "asif45/LLM-PROP"
 HF_TOKEN = os.getenv("HF_TOKEN")
 CHECKPOINT_FILES = {
-    "checkpoints/samples/classification/best_checkpoint_for_is_gap_direct.pt": "checkpoints/best_checkpoint_for_is_gap_direct.pt",
-    "checkpoints/samples/regression/best_checkpoint_for_energy_per_atom.pt": "checkpoints/best_checkpoint_for_energy_per_atom.pt",
-    "checkpoints/samples/regression/best_checkpoint_for_fepa.pt": "checkpoints/best_checkpoint_for_fepa.pt",
-    "checkpoints/samples/regression/best_checkpoint_for_band_gap.pt": "checkpoints/best_checkpoint_for_band_gap.pt",
-    "checkpoints/samples/regression/best_checkpoint_for_e_above_hull.pt": "checkpoints/best_checkpoint_for_e_above_hull.pt",
-    "checkpoints/samples/regression/best_checkpoint_for_volume.pt": "checkpoints/best_checkpoint_for_volume.pt",
+    "checkpoints/samples/classification/best_checkpoint_for_is_gap_direct.pt": "checkpoints/samples/classification/best_checkpoint_for_is_gap_direct.pt",
+    "checkpoints/samples/regression/best_checkpoint_for_band_gap.pt": "checkpoints/samples/regression/best_checkpoint_for_band_gap.pt",
+    "checkpoints/samples/regression/best_checkpoint_for_energy_per_atom.pt": "checkpoints/samples/regression/best_checkpoint_for_energy_per_atom.pt",
+    "checkpoints/samples/regression/best_checkpoint_for_e_above_hull.pt": "checkpoints/samples/regression/best_checkpoint_for_e_above_hull.pt",
+    "checkpoints/samples/regression/best_checkpoint_for_fepa.pt": "checkpoints/samples/regression/best_checkpoint_for_fepa.pt",
+    "checkpoints/samples/regression/best_checkpoint_for_volume.pt": "checkpoints/samples/regression/best_checkpoint_for_volume.pt",
 }
 
 
