@@ -1,11 +1,26 @@
+import os
+import shutil
+from pathlib import Path
 from typing import Callable, Dict, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from huggingface_hub import hf_hub_download
 from pydantic import BaseModel, Field
 
 THRESHOLD = 0.33
 predict_all_fn: Optional[Callable[..., Dict[str, object]]] = None
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+HF_REPO_ID = "asif45/LLM-PROP"
+HF_TOKEN = os.getenv("HF_TOKEN")
+CHECKPOINT_FILES = {
+    "checkpoints/samples/classification/best_checkpoint_for_is_gap_direct.pt": "checkpoints/best_checkpoint_for_is_gap_direct.pt",
+    "checkpoints/samples/regression/best_checkpoint_for_energy_per_atom.pt": "checkpoints/best_checkpoint_for_energy_per_atom.pt",
+    "checkpoints/samples/regression/best_checkpoint_for_fepa.pt": "checkpoints/best_checkpoint_for_fepa.pt",
+    "checkpoints/samples/regression/best_checkpoint_for_band_gap.pt": "checkpoints/best_checkpoint_for_band_gap.pt",
+    "checkpoints/samples/regression/best_checkpoint_for_e_above_hull.pt": "checkpoints/best_checkpoint_for_e_above_hull.pt",
+    "checkpoints/samples/regression/best_checkpoint_for_volume.pt": "checkpoints/best_checkpoint_for_volume.pt",
+}
 
 
 class PredictRequest(BaseModel):
@@ -37,9 +52,27 @@ app.add_middleware(
 )
 
 
+def ensure_checkpoint_files() -> None:
+    for local_relative_path, repo_file_path in CHECKPOINT_FILES.items():
+        local_path = PROJECT_DIR / local_relative_path
+        if local_path.exists():
+            continue
+
+        local_path.parent.mkdir(parents=True, exist_ok=True)
+        downloaded_path = hf_hub_download(
+            repo_id=HF_REPO_ID,
+            filename=repo_file_path,
+            repo_type="model",
+            token=HF_TOKEN,
+        )
+        shutil.copy2(downloaded_path, local_path)
+
+
 @app.on_event("startup")
 def load_model_once() -> None:
-    # Import on startup so model artifacts are loaded once and reused across requests.
+    # Download missing checkpoints first, then import the predictor so it loads the local files once.
+    ensure_checkpoint_files()
+
     global predict_all_fn
     from predict_all import predict_all
 
