@@ -14,7 +14,7 @@ const port = process.env.PORT || 5000;
 const fastApiBaseUrl =
   process.env.FASTAPI_URL ||
   process.env.FASTAPI_BASE_URL ||
-  "http://127.0.0.1:8000";
+  "https://asif45-llmprop-api.hf.space";
 
 app.use(express.json());
 // allow frontend dev host (or set CLIENT_ORIGIN env) — adjust for production
